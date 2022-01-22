@@ -80,7 +80,19 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="C:/Users/ruben/aed2122_trabalho2/Haversine.cpp">
+			<Option target="aed2122_trabalho2"/>
+		</Unit>
+		<Unit filename="C:/Users/ruben/aed2122_trabalho2/graph.cpp">
+			<Option target="aed2122_trabalho2"/>
+		</Unit>
+		<Unit filename="C:/Users/ruben/aed2122_trabalho2/graph.h">
+			<Option target="aed2122_trabalho2"/>
+		</Unit>
 		<Unit filename="C:/Users/ruben/aed2122_trabalho2/main.cpp">
+			<Option target="aed2122_trabalho2"/>
+		</Unit>
+		<Unit filename="C:/Users/ruben/aed2122_trabalho2/minHeap.h">
 			<Option target="aed2122_trabalho2"/>
 		</Unit>
 		<Unit filename="C:/Users/ruben/aed2122_trabalho2/CMakeLists.txt">

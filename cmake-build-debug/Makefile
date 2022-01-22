@@ -128,6 +128,54 @@ aed2122_trabalho2/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\aed2122_trabalho2.dir\build.make CMakeFiles/aed2122_trabalho2.dir/build
 .PHONY : aed2122_trabalho2/fast
 
+Haversine.obj: Haversine.cpp.obj
+.PHONY : Haversine.obj
+
+# target to build an object file
+Haversine.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\aed2122_trabalho2.dir\build.make CMakeFiles/aed2122_trabalho2.dir/Haversine.cpp.obj
+.PHONY : Haversine.cpp.obj
+
+Haversine.i: Haversine.cpp.i
+.PHONY : Haversine.i
+
+# target to preprocess a source file
+Haversine.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\aed2122_trabalho2.dir\build.make CMakeFiles/aed2122_trabalho2.dir/Haversine.cpp.i
+.PHONY : Haversine.cpp.i
+
+Haversine.s: Haversine.cpp.s
+.PHONY : Haversine.s
+
+# target to generate assembly for a file
+Haversine.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\aed2122_trabalho2.dir\build.make CMakeFiles/aed2122_trabalho2.dir/Haversine.cpp.s
+.PHONY : Haversine.cpp.s
+
+graph.obj: graph.cpp.obj
+.PHONY : graph.obj
+
+# target to build an object file
+graph.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\aed2122_trabalho2.dir\build.make CMakeFiles/aed2122_trabalho2.dir/graph.cpp.obj
+.PHONY : graph.cpp.obj
+
+graph.i: graph.cpp.i
+.PHONY : graph.i
+
+# target to preprocess a source file
+graph.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\aed2122_trabalho2.dir\build.make CMakeFiles/aed2122_trabalho2.dir/graph.cpp.i
+.PHONY : graph.cpp.i
+
+graph.s: graph.cpp.s
+.PHONY : graph.s
+
+# target to generate assembly for a file
+graph.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\aed2122_trabalho2.dir\build.make CMakeFiles/aed2122_trabalho2.dir/graph.cpp.s
+.PHONY : graph.cpp.s
+
 main.obj: main.cpp.obj
 .PHONY : main.obj
 
@@ -161,6 +209,12 @@ help:
 	@echo ... edit_cache
 	@echo ... rebuild_cache
 	@echo ... aed2122_trabalho2
+	@echo ... Haversine.obj
+	@echo ... Haversine.i
+	@echo ... Haversine.s
+	@echo ... graph.obj
+	@echo ... graph.i
+	@echo ... graph.s
 	@echo ... main.obj
 	@echo ... main.i
 	@echo ... main.s

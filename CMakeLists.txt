@@ -3,4 +3,4 @@ project(aed2122_trabalho2)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(aed2122_trabalho2 main.cpp)
+add_executable(aed2122_trabalho2 main.cpp Haversine.cpp graph.cpp graph.h minHeap.h)
