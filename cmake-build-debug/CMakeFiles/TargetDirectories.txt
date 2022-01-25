@@ -1,3 +1,0 @@
-C:/Users/ruben/aed2122_trabalho2/cmake-build-debug/CMakeFiles/aed2122_trabalho2.dir
-C:/Users/ruben/aed2122_trabalho2/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/ruben/aed2122_trabalho2/cmake-build-debug/CMakeFiles/rebuild_cache.dir

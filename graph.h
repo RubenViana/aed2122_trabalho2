@@ -8,13 +8,14 @@
 #include <vector>
 #include <list>
 #include <iostream>
+#include <string>
 
 using namespace std;
 
 class Graph {
     struct Edge {
         int dest;   // Destination node
-        int weight; // An integer weight
+        double weight; // An integer weight
         string line; //
     };
 
@@ -31,12 +32,14 @@ class Graph {
 
     void dijkstra(int s);
 
+
 public:
+    void print();
     // Constructor: nr nodes and direction (default: undirected)
     Graph(int nodes, bool dir = false);
 
     // Add edge from source to destination with a certain weight
-    void addEdge(int src, int dest, int weight = 1);
+    void addEdge(int src, int dest, double weight, string line);
 
     // ----- Functions to implement in this class -----
     int dijkstra_distance(int a, int b);

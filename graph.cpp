@@ -1,7 +1,7 @@
 // AED 2021/2022 - Aula Pratica 11
 // Pedro Ribeiro (DCC/FCUP) [17/01/2022]
 
-#include "graph.h"
+#include"graph.h"
 #include <climits>
 
 #define INF (INT_MAX/2)
@@ -11,10 +11,10 @@ Graph::Graph(int num, bool dir) : n(num), hasDir(dir), nodes(num+1) {
 }
 
 // Add edge from source to destination with a certain weight
-void Graph::addEdge(int src, int dest, int weight) {
+void Graph::addEdge(int src, int dest, double weight, string line) {
     if (src<1 || src>n || dest<1 || dest>n) return;
-    nodes[src].adj.push_back({dest, weight});
-    if (!hasDir) nodes[dest].adj.push_back({src, weight});
+    nodes[src].adj.push_back({dest, weight, line});
+    if (!hasDir) nodes[dest].adj.push_back({src, weight, line});
 }
 
 
@@ -57,5 +57,12 @@ void Graph::dijkstra(int s) {
                 nodes[v].pred = u;
             }
         }
+    }
+}
+
+void Graph::print () {
+    for (int i = 1; i <= n; i++){
+        for (auto &d: nodes[i].adj)
+            cout << i << " -- " << d.weight << " -> " << d.dest << " : Line " << d.line << endl;
     }
 }
