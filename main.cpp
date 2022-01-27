@@ -102,6 +102,37 @@ double haversine(double lat1, double lon1, double lat2, double lon2){
     return (rad * c) * 1000;     // returns the distance in Km
 }
 
+
+string findClosestStop(double lat, double log, const vector<Stop>& stops){
+    string closestStop = "";
+    double dist = INT64_MAX;
+    for (int i = 0; i < stops.size() - 1; i++){
+        if (haversine(lat,log,stod(stops[i].latitude), stod(stops[i].longitude)) < dist) {
+            dist = haversine(lat,log,stod(stops[i].latitude), stod(stops[i].longitude));
+            closestStop = stops[i].code;
+        }
+    }
+    return closestStop;
+}
+
+
+void inputTest(const vector<Stop> &stops, string &start, string &end){
+    double lat1, log1, lat2, log2;
+    cout << "----START----" << endl;
+    cout << "latitude : "; cin >> lat1;
+    cout << "longitude : "; cin >> log1;
+    start = findClosestStop(lat1, log1, stops);
+    cout << "Starting Stop : " << start << endl;
+
+    cout << "----END----" << endl;
+    cout << "latitude : "; cin >> lat2;
+    cout << "longitude : "; cin >> log2;
+    end = findClosestStop(lat2, log2, stops);
+    cout << "Ending Stop : " << end << endl;
+
+}
+
+
 int main() {
     map<string, int> stopsIndex;
     vector<Stop> stops = readStopsFile("dataset\\stops.csv", stopsIndex);
@@ -141,14 +172,7 @@ int main() {
 
         cout << endl;
     }
-
     //-------
-
-    //cout << (int)haversine(stod(stops[stopsIndex[allLines[1].stopsDir0[1]]-1].latitude),stod(stops[stopsIndex[allLines[1].stopsDir0[1]]-1].longitude),stod(stops[stopsIndex[allLines[1].stopsDir0[1+1]]-1].latitude),stod(stops[stopsIndex[allLines[1].stopsDir0[1+1]]-1].longitude)) << endl;
-    cout << stod(stops[stopsIndex[allLines[0].stopsDir0[0]]-1].latitude) << endl;
-    cout << stod(stops[stopsIndex[allLines[0].stopsDir0[0]]-1].longitude) << endl;
-    cout << stod(stops[stopsIndex[allLines[0].stopsDir0[1]]-1].latitude) << endl;
-    cout << stod(stops[stopsIndex[allLines[0].stopsDir0[1]]-1].longitude) << endl;
 */
 
     Graph graph(stopsIndex.size(), true);
@@ -165,12 +189,36 @@ int main() {
             }
         }
     }
-
-    cout << graph.dijkstra_distance(stopsIndex["AAL2"], stopsIndex["BARC1"]) << endl;
-    list<int> path = graph.dijkstra_path(stopsIndex["AAL2"], stopsIndex["BARC1"]);
-    for (auto p : path) {
-        cout << stops[p].code << endl;
+/*
+//---- TA FUNCIONANDO ----
+    cout << "distance : " << graph.dijkstra_distance(stopsIndex["MATM3"], stopsIndex["GODS"]) << endl;
+    cout << "dijkstra_path :" << endl;
+    list<int> pathDIJ = graph.dijkstra_path(stopsIndex["MATM3"], stopsIndex["GODS"]);
+    for (auto p : pathDIJ) {
+        cout << stops[p - 1].code << " (" << p <<") / " << stops[p - 1].latitude << " " << stops[p - 1].longitude<< endl;
     }
-    //graph.print();
+
+    cout << "dijkstra_pathLines :" << endl;
+    list<string> pathLines = graph.dijkstra_pathLines(stopsIndex["MATM3"], stopsIndex["GODS"]);
+    for (auto l : pathLines)
+        cout << l << endl;
+
+//------------------------
+
+    cout << " --------------- " << endl;
+    list<int> pathBFS = graph.bfs_path(stopsIndex["MATM3"], stopsIndex["GODS"]);
+
+    cout << "bfs_path : " << endl;
+    for (auto p : pathBFS) {
+        cout << stops[p - 1].code << " (" << p <<") / " << stops[p - 1].latitude << " " << stops[p - 1].longitude<< endl;
+    }
+  */
+
+    string start, end;
+    inputTest(stops, start, end);
+    list<int> pathDIJ = graph.dijkstra_path(stopsIndex[start], stopsIndex[end]);
+    for (auto p : pathDIJ) {
+        cout << stops[p - 1].code << " (" << p <<") / " << stops[p - 1].latitude << " " << stops[p - 1].longitude<< endl;
+    }
     return 0;
 }

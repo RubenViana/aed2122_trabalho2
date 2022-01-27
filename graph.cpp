@@ -6,6 +6,7 @@
 
 #define INF (INT_MAX/2)
 
+
 // Constructor: nr nodes and direction (default: undirected)
 Graph::Graph(int num, bool dir) : n(num), hasDir(dir), nodes(num+1) {
 }
@@ -24,14 +25,26 @@ int Graph::dijkstra_distance(int a, int b) {
     return nodes[b].dist;
 }
 
-list<int> Graph::dijkstra_path(int a, int b) {
+list<int> Graph::dijkstra_path(int a, int b) { // Caminho que percorre o caminho com menor distância
     list<int> path;
+    dijkstra(a);
     if (nodes[b].dist == INF) return path;
     while(a != b) {
         path.push_front(b);
         b = nodes[b].pred;
     }
     path.push_front(a);
+    return path;
+}
+
+list<string> Graph::dijkstra_pathLines(int a, int b) {
+    list<string> path;
+    dijkstra(a);
+    if (nodes[b].dist == INF) return path;
+    while(a != b) {
+        path.push_front(nodes[b].predLine);
+        b = nodes[b].pred;
+    }
     return path;
 }
 
@@ -55,9 +68,45 @@ void Graph::dijkstra(int s) {
                 nodes[v].dist = nodes[u].dist + w;
                 q.decreaseKey(v, nodes[v].dist);
                 nodes[v].pred = u;
+                nodes[v].predLine = e.line;
             }
         }
     }
+}
+
+void Graph::bfs(int v) {
+    for (int v=1; v<=n; v++){
+        nodes[v].visited = false;
+        nodes[v].dist = -1;
+    }
+    queue<int> q; // queue of unvisited nodes
+    q.push(v);
+    nodes[v].dist = 0;
+    nodes[v].visited = true;
+    nodes[v].pred = v;
+    while (!q.empty()) { // while there are still unvisited nodes
+        int u = q.front(); q.pop();
+        for (auto e : nodes[u].adj) {
+            int w = e.dest;
+            if (!nodes[w].visited) {
+                q.push(w);
+                nodes[w].visited = true;
+                nodes[w].dist = nodes[u].dist + 1;
+                nodes[w].pred = u;
+            }
+        }
+    }
+}
+
+list<int> Graph::bfs_path(int a, int b){ // Caminho que percorre o menor número de paragens
+    list<int> path;
+    bfs(a);
+    while(a != b) {
+        path.push_front(b);
+        b = nodes[b].pred;
+    }
+    path.push_front(a);
+    return path;
 }
 
 void Graph::print () {

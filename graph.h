@@ -9,8 +9,10 @@
 #include <list>
 #include <iostream>
 #include <string>
+#include <queue>
 
 using namespace std;
+
 
 class Graph {
     struct Edge {
@@ -23,6 +25,7 @@ class Graph {
         list<Edge> adj; // The list of outgoing edges (to adjacent nodes)
         int dist;
         int pred;
+        string predLine;
         bool visited;
     };
 
@@ -32,18 +35,22 @@ class Graph {
 
     void dijkstra(int s);
 
+    void bfs(int v);
+
 
 public:
     void print();
+
     // Constructor: nr nodes and direction (default: undirected)
     Graph(int nodes, bool dir = false);
 
     // Add edge from source to destination with a certain weight
     void addEdge(int src, int dest, double weight, string line);
 
-    // ----- Functions to implement in this class -----
     int dijkstra_distance(int a, int b);
     list<int> dijkstra_path(int a, int b);
+    list<string> dijkstra_pathLines(int a, int b);
+    list<int> bfs_path(int a, int b);
 };
 
 #endif
