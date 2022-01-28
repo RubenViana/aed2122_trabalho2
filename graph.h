@@ -4,6 +4,7 @@
 #ifndef _GRAPH_H_
 #define _GRAPH_H_
 
+#include "disjointSet.h"
 #include "minHeap.h"
 #include <vector>
 #include <list>
@@ -25,6 +26,7 @@ class Graph {
         list<Edge> adj; // The list of outgoing edges (to adjacent nodes)
         int dist;
         int pred;
+        int parent;
         string predLine;
         bool visited;
     };
@@ -37,8 +39,12 @@ class Graph {
 
     void bfs(int v);
 
-
 public:
+
+    int kruskal();
+
+    int prim(int v);
+
     void print();
 
     // Constructor: nr nodes and direction (default: undirected)

@@ -3,6 +3,7 @@
 
 #include"graph.h"
 #include <climits>
+#include <algorithm>
 
 #define INF (INT_MAX/2)
 
@@ -108,6 +109,56 @@ list<int> Graph::bfs_path(int a, int b){ // Caminho que percorre o menor número
     path.push_front(a);
     return path;
 }
+
+int Graph::prim(int r) {
+
+    MinHeap<int,int> primHeap = MinHeap<int,int> (n,-1);
+
+    for(int i = 1; i <= n; i++){
+        nodes[i].dist = INF;
+        primHeap.insert(i, INF);
+    }
+    nodes[r].dist = 0;
+    primHeap.decreaseKey(r,0);
+    while(primHeap.getSize() != 0){
+        int smallestDisKey = primHeap.removeMin();
+        for(auto it = nodes[smallestDisKey].adj.begin(); it != nodes[smallestDisKey].adj.end(); it++){
+            if(primHeap.hasKey(it->dest) && it->weight < nodes[it->dest].dist){
+                nodes[it->dest].parent = smallestDisKey;
+                nodes[it->dest].dist = it->weight;
+                primHeap.decreaseKey(it->dest,it->weight);
+            }
+        }
+    }
+    int sum = 0;
+    for(int j = 1; j <= n; j++){
+        sum += nodes[j].dist;
+    }
+    return sum;
+}
+
+int Graph::kruskal() {
+    int var = 0;
+    DisjointSets<int> newSect;
+    typedef pair<int,int> edgesWeight; // (u,v)
+    vector<pair<int,edgesWeight>> newGraph; // (edgeWeight,(u,v))
+    for(int i = 1; i <= n; i++){
+        newSect.makeSet(i);
+        for(auto it = nodes[i].adj.begin() ; it != nodes[i].adj.end(); it++){
+            newGraph.push_back({it->weight,{i,it->dest}});
+        }
+    }
+    sort(newGraph.begin(),newGraph.end());
+
+    for (auto it = newGraph.begin(); it != newGraph.end(); it++) {
+        if(newSect.find(it->second.first) != newSect.find(it->second.second)){
+            var += it->first;
+            newSect.unite(it->second.first,it->second.second);
+        }
+    }
+    return var;
+}
+
 
 void Graph::print () {
     for (int i = 1; i <= n; i++){

@@ -9,6 +9,9 @@
 
 using namespace std;
 
+/**
+ * This struct 
+ */
 struct Stop {       //Code,Name,Zone,Latitude,Longitude
     string code;
     string name;
@@ -24,6 +27,15 @@ struct Line {
     vector<string> stopsDir1;
 };
 
+
+/**
+ * This function reads the given file that contains all the information about the STCP stops,
+ * and saves them in a vector with the name of the respective stop and gives to each
+ * one of them an index (1,...,n)
+ * @param filename (file name with information about each stop)
+ * @param stopsIndex (vector that contains the code and the given index of each stop)
+ * @return This function returns the vector with all STCP stops
+ */
 vector<Stop> readStopsFile(const string &filename, map<string,int> &stopsIndex) {
     vector<Stop> stops;
     ifstream stopsFile(filename);
@@ -129,8 +141,24 @@ void inputTest(const vector<Stop> &stops, string &start, string &end){
     cout << "longitude : "; cin >> log2;
     end = findClosestStop(lat2, log2, stops);
     cout << "Ending Stop : " << end << endl;
+}
+
+bool mainMenu(){
+    return 0;
+    int opt;
+    while (true){
+        cout << "\tMAIN MENU\n\n";
+        cout << "1 - INPUT : LATITUDE/LONGITUDE\n";
+        cout << "2 - INPUT : STOP_CODE\n";
+        cout << "0 - EXIT\n";
+        cout << endl << "Option : ";
+        cin >> opt;
+    }
 
 }
+
+
+
 
 
 int main() {
@@ -214,11 +242,19 @@ int main() {
     }
   */
 
+    /*
+
     string start, end;
     inputTest(stops, start, end);
     list<int> pathDIJ = graph.dijkstra_path(stopsIndex[start], stopsIndex[end]);
     for (auto p : pathDIJ) {
         cout << stops[p - 1].code << " (" << p <<") / " << stops[p - 1].latitude << " " << stops[p - 1].longitude<< endl;
     }
+     */
+
+    cout << " -----------KRUSKAL--------------" << endl;
+    cout << graph.kruskal() << endl;
+    cout << " ------------PRIM--------------" << endl;
+    cout << graph.prim(100) << endl;
     return 0;
 }
