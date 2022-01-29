@@ -6,6 +6,7 @@
 #include "graph.h"
 #include <map>
 #include <cmath>
+#include <iomanip>
 
 #if defined(_WIN32)
 #define CLEAR_MACRO() system("cls")
@@ -16,7 +17,8 @@
 using namespace std;
 
 /**
- * This struct 
+ * This struct saves all the information about a Stop, like the code, name, zone,
+ * latitude and longitude.
  */
 struct Stop {       //Code,Name,Zone,Latitude,Longitude
     string code;
@@ -26,13 +28,16 @@ struct Stop {       //Code,Name,Zone,Latitude,Longitude
     string longitude;
 };
 
+/**
+ * This struct saves all the information about the line of the bus, like the code, name
+ * and the path of both directions.
+ */
 struct Line {
     string code;
     string name;
     vector<string> stopsDir0;
     vector<string> stopsDir1;
 };
-
 
 /**
  * This function reads the given file that contains all the information about the STCP stops,
@@ -64,6 +69,12 @@ vector<Stop> readStopsFile(const string &filename, map<string,int> &stopsIndex) 
     return stops;
 }
 
+/**
+ * This functions reads the file that contain all the information about the lines in a vector
+ * of the type Line (previous created struct).
+ * @param filename (file name with information about each Line)
+ * @return This function returns the vector with all the lines.
+ */
 vector<Line> readLinesFile(const string &filename) {
     vector<Line> allLines;
     ifstream linesFile(filename);
@@ -78,6 +89,10 @@ vector<Line> readLinesFile(const string &filename) {
     return allLines;
 }
 
+/**
+ * This function reads the information of all the files of all lines and constructs the vector
+ * that contains the track of the bus.
+ */
 void readLineStops (vector<Line> &allLines) {
     for (auto &l : allLines){
         stringstream ss0("dataset\\line_" + l.code + "_0.csv");
@@ -111,6 +126,14 @@ void waitEnter(){
     std::getline(std::cin, str);
 }
 
+/**
+ * Calculates the distance between two given coordinates.
+ * @param lat1
+ * @param lon1
+ * @param lat2
+ * @param lon2
+ * @return This function returns the distance between two coordinates.
+ */
 double haversine(double lat1, double lon1, double lat2, double lon2){
     // distance between latitudes and longitudes
     double dLat = (lat2 - lat1) * M_PI / 180.0;
@@ -127,7 +150,14 @@ double haversine(double lat1, double lon1, double lat2, double lon2){
     return (rad * c) * 1000;     // returns the distance in Km
 }
 
-
+/**
+ * This function goes through all the sops and tries to find the nearest stop to the
+ * coordinate given.
+ * @param lat
+ * @param log
+ * @param stops (vector with all the stops)
+ * @return This function return the code of the closest stop to the coordinates given.
+ */
 string findClosestStop(double lat, double log, const vector<Stop>& stops){
     string closestStop = "";
     double dist = INT64_MAX;
@@ -140,7 +170,15 @@ string findClosestStop(double lat, double log, const vector<Stop>& stops){
     return closestStop;
 }
 
-
+/**
+ * This function asks to the user to input a starting point and an end point.
+ * The user can give the code of the stop or the coordinates of the respective
+ * stop or his coordinates.
+ * @param type (Format type that the user wrote. 1 -> coordinates ; 2 -> stops code)
+ * @param stops (vector with all the stops)
+ * @param start (The starting point)
+ * @param end (The end point)
+ */
 void getStartEndPoints(int type, const vector<Stop> &stops, string &start, string &end){
     CLEAR_MACRO();
     cout << "-----INPUT-----\n\n";
@@ -167,14 +205,20 @@ void getStartEndPoints(int type, const vector<Stop> &stops, string &start, strin
     else if (type == 2){
         cout << "START POINT :" << endl;
         cout << "  - Stop Code -> "; cin >> start;
+        for (auto &c : start) c = toupper(c);
         cout << endl << endl;
 
         cout << "END POINT :" << endl;
         cout << "  - Stop Code -> "; cin >> end;
+        for (auto &c : end) c = toupper(c);
         cout << endl << endl;
     }
 }
 
+/**
+ * This function asks to the user to choose hat type of path he wants (for example,
+ * with less stops, less distance)
+ */
 int getSearchMethod(){
     int searchMethod;
     while (true) {
@@ -201,6 +245,13 @@ int getSearchMethod(){
     }
 }
 
+/**
+ * This function presents to the user the Main Menu, asking what type of input he wants
+ * to introduce (coordinates of a place or the code of a stop)
+ * @param stops
+ * @param g (graph with all the stops and distances)
+ * @param stopsIndex (vector with the index of all stops)
+ */
 void mainMenu(const vector<Stop> &stops, Graph &g, map<string,int> &stopsIndex){
     int opt;
     while (true){
@@ -208,6 +259,7 @@ void mainMenu(const vector<Stop> &stops, Graph &g, map<string,int> &stopsIndex){
         cout << "\tMAIN MENU\n\n";
         cout << "1 - INPUT : LATITUDE/LONGITUDE\n";
         cout << "2 - INPUT : STOP_CODE\n";
+        cout << "3 - GLOBAL NETWORK MST\n";
         cout << "0 - EXIT\n";
         cout << endl << "Option : ";
         cin >> opt;
@@ -220,8 +272,9 @@ void mainMenu(const vector<Stop> &stops, Graph &g, map<string,int> &stopsIndex){
         else {
             string startStop, endStop;
             list<int> path;
-            int searchMethod;
-            switch(opt) {
+            list<string> pathLine;
+            int searchMethod = 0;
+            switch (opt) {
                 case 1 :
                     getStartEndPoints(1, stops, startStop, endStop);
                     break;
@@ -229,42 +282,50 @@ void mainMenu(const vector<Stop> &stops, Graph &g, map<string,int> &stopsIndex){
                     getStartEndPoints(2, stops, startStop, endStop);
                     break;
                 case 3:
-                    // dar print a todas as paragens !
+                    cout << "GLOBAL NETWORK MST = " << g.kruskal() << " meters\n";
+                    searchMethod = -1;
+                    waitEnter();
                     break;
                 case 0 :
                     exit(0);
                 default :
                     cout << "Invalid Input !" << endl;
+                    searchMethod = -1;
                     break;
             }
-            do{
-                searchMethod = getSearchMethod();
-                if (searchMethod == 1){
-                    path = g.dijkstra_path(stopsIndex[startStop], stopsIndex[endStop]);
-                    cout << "Dijkstra Alg\n";
+            if (searchMethod != -1) {
+                while (true) {
+                    searchMethod = getSearchMethod();
+                    if (searchMethod == 0) break;
+                    else if (searchMethod == 1) {
+                        path = g.dijkstra_path(stopsIndex[startStop], stopsIndex[endStop]);
+                        pathLine = g.dijkstra_pathLines(stopsIndex[startStop], stopsIndex[endStop]);
+                    } else if (searchMethod == 2) {
+                        path = g.bfs_path(stopsIndex[startStop], stopsIndex[endStop]);
+                        pathLine = g.bfs_pathLines(stopsIndex[startStop], stopsIndex[endStop]);
+                    }
+                    //printing the path for the trip :  ... falta oraganizar a separaçao das colunas ...
+                    int i = 1;
+                    cout
+                            << " STEP NUMBER  ||  LINE  ||  STOP CODE  ||             STOP NAME            ||     LATITUDE     ||     LONGITUDE  "
+                            << endl;
+                    for (auto &p: path) {
+                        cout
+                                << "===================================================================================================================="
+                                << endl;
+                        cout << setw(8) << i << setw(8) << "||" << setw(5) << *pathLine.begin() << setw(5) << "||"
+                             << setw(8) << stops[p - 1].code << setw(7) << "||" << setw(26) << stops[p - 1].name
+                             << setw(10)
+                             << "||" << setw(15) << stops[p - 1].latitude << setw(5) << "||" << setw(15)
+                             << stops[p - 1].longitude << setw(5) << endl;
+                        i++;
+                        pathLine.pop_front();
+                    }
                 }
-                else if (searchMethod == 2){
-                    path = g.bfs_path(stopsIndex[startStop], stopsIndex[endStop]);
-                    cout << "BFS Alg\n";
-                }
-
-                //printing the path for the trip :  ... falta oraganizar a separaçao das colunas ...
-                int i = 1;
-                cout << "STEP NUMBER  ||  STOP CODE  ||  STOP NAME  ||  LATITUDE  ||  LONGITUDE" << endl;
-                for (auto &p : path) {
-                    cout << "----------------------------------------------------------------------" << endl;
-                    cout << "   "<< i << "   ||   " << stops[p - 1].code <<  "   ||   " << stops[p - 1].name << "   ||   " << stops[p - 1].latitude << "   ||   " << stops[p - 1].longitude << endl;
-                    i++;
-                }
-            }while (searchMethod != 0);
+            }
         }
     }
-
 }
-
-
-
-
 
 int main() {
     map<string, int> stopsIndex;
@@ -273,87 +334,43 @@ int main() {
     allLines.erase(allLines.begin() + allLines.size() - 1);
 
     readLineStops(allLines);
-/*
-    //printing the stopsIndex :
-    for (auto &s : stopsIndex) {
-        cout << s.first << " -> " << s.second << endl;
-    }
-    //-------
-    //printing the stops :
-    for (auto &s : stops) {
-        cout << s.code << " / " << s.name << " / " << s.zone << " / " << s.latitude << " / " << s.longitude << endl;
-    }
-    //-------
 
-
-    //printing the lines :
-    for (auto &l : allLines) {
-        cout << l.code << " / " << l.name << endl;
-    }
-    //-------
-
-    //printing the stops of ev :
-    for (auto &l : allLines) {
-        cout << l.code << " / " << l.name << endl;
-        cout << "direction 0 :" << endl;
-        for (auto &s : l.stopsDir0)
-            cout << stops[stopsIndex[s] - 1].latitude << " / " << stops[stopsIndex[s] - 1].longitude << " -> " ;
-        cout << endl;
-        cout << "direction 1 :" << endl;
-        for (auto &s : l.stopsDir1)
-            cout << stops[stopsIndex[s] - 1].latitude << " / " << stops[stopsIndex[s] - 1].longitude << " -> " ;
-
-        cout << endl;
-    }
-    //-------
-*/
-
-    Graph graph(stopsIndex.size(), true);
+    Graph directedGraph(stopsIndex.size(), true);
+    Graph undirectedGraph(stopsIndex.size(), false);
 
     for (int j = 0; j < allLines.size(); j++){
-
-        for (int i = 0; i < allLines[j].stopsDir0.size() - 1; i++){
-            graph.addEdge(stopsIndex[allLines[j].stopsDir0[i]],stopsIndex[allLines[j].stopsDir0[i + 1]], haversine(stod(stops[stopsIndex[allLines[j].stopsDir0[i]]-1].latitude),stod(stops[stopsIndex[allLines[j].stopsDir0[i]]-1].longitude),stod(stops[stopsIndex[allLines[j].stopsDir0[i+1]]-1].latitude),stod(stops[stopsIndex[allLines[j].stopsDir0[i+1]]-1].longitude)),allLines[j].code);
+        for (int i = 0; i < allLines[j].stopsDir0.size() - 1; i++) {
+            directedGraph.addEdge(stopsIndex[allLines[j].stopsDir0[i]], stopsIndex[allLines[j].stopsDir0[i + 1]],
+                                  haversine(stod(stops[stopsIndex[allLines[j].stopsDir0[i]] - 1].latitude),
+                                            stod(stops[stopsIndex[allLines[j].stopsDir0[i]] - 1].longitude),
+                                            stod(stops[stopsIndex[allLines[j].stopsDir0[i + 1]] - 1].latitude),
+                                            stod(stops[stopsIndex[allLines[j].stopsDir0[i + 1]] - 1].longitude)),
+                                  allLines[j].code);
+            undirectedGraph.addEdge(stopsIndex[allLines[j].stopsDir0[i]], stopsIndex[allLines[j].stopsDir0[i + 1]],
+                                    haversine(stod(stops[stopsIndex[allLines[j].stopsDir0[i]] - 1].latitude),
+                                              stod(stops[stopsIndex[allLines[j].stopsDir0[i]] - 1].longitude),
+                                              stod(stops[stopsIndex[allLines[j].stopsDir0[i + 1]] - 1].latitude),
+                                              stod(stops[stopsIndex[allLines[j].stopsDir0[i + 1]] - 1].longitude)),
+                                    allLines[j].code);
         }
-
         if (allLines[j].stopsDir1.size() != 0) {
             for (int i = 0; i < allLines[j].stopsDir1.size() - 1; i++) {
-                graph.addEdge(stopsIndex[allLines[j].stopsDir1[i]], stopsIndex[allLines[j].stopsDir1[i + 1]], haversine(stod(stops[stopsIndex[allLines[j].stopsDir1[i]]-1].latitude),stod(stops[stopsIndex[allLines[j].stopsDir1[i]]-1].longitude),stod(stops[stopsIndex[allLines[j].stopsDir1[i+1]]-1].latitude),stod(stops[stopsIndex[allLines[j].stopsDir1[i+1]]-1].longitude)),allLines[j].code);
+                directedGraph.addEdge(stopsIndex[allLines[j].stopsDir1[i]], stopsIndex[allLines[j].stopsDir1[i + 1]],
+                                      haversine(stod(stops[stopsIndex[allLines[j].stopsDir1[i]] - 1].latitude),
+                                                stod(stops[stopsIndex[allLines[j].stopsDir1[i]] - 1].longitude),
+                                                stod(stops[stopsIndex[allLines[j].stopsDir1[i + 1]] - 1].latitude),
+                                                stod(stops[stopsIndex[allLines[j].stopsDir1[i + 1]] - 1].longitude)),
+                                      allLines[j].code);
+                undirectedGraph.addEdge(stopsIndex[allLines[j].stopsDir1[i]], stopsIndex[allLines[j].stopsDir1[i + 1]],
+                                        haversine(stod(stops[stopsIndex[allLines[j].stopsDir1[i]] - 1].latitude),
+                                                  stod(stops[stopsIndex[allLines[j].stopsDir1[i]] - 1].longitude),
+                                                  stod(stops[stopsIndex[allLines[j].stopsDir1[i + 1]] - 1].latitude),
+                                                  stod(stops[stopsIndex[allLines[j].stopsDir1[i + 1]] - 1].longitude)),
+                                        allLines[j].code);
             }
         }
     }
-/*
-//---- TA FUNCIONANDO ----
-    cout << "distance : " << graph.dijkstra_distance(stopsIndex["MATM3"], stopsIndex["GODS"]) << endl;
-    cout << "dijkstra_path :" << endl;
-    list<int> pathDIJ = graph.dijkstra_path(stopsIndex["MATM3"], stopsIndex["GODS"]);
-    for (auto p : pathDIJ) {
-        cout << stops[p - 1].code << " (" << p <<") / " << stops[p - 1].latitude << " " << stops[p - 1].longitude<< endl;
-    }
 
-    cout << "dijkstra_pathLines :" << endl;
-    list<string> pathLines = graph.dijkstra_pathLines(stopsIndex["MATM3"], stopsIndex["GODS"]);
-    for (auto l : pathLines)
-        cout << l << endl;
-
-//------------------------
-
-    cout << " --------------- " << endl;
-    list<int> pathBFS = graph.bfs_path(stopsIndex["MATM3"], stopsIndex["GODS"]);
-
-    cout << "bfs_path : " << endl;
-    for (auto p : pathBFS) {
-        cout << stops[p - 1].code << " (" << p <<") / " << stops[p - 1].latitude << " " << stops[p - 1].longitude<< endl;
-    }
-  */
-
-    /*
-    cout << " -----------KRUSKAL--------------" << endl;
-    cout << graph.kruskal() << endl;
-    cout << " ------------PRIM--------------" << endl;
-    cout << graph.prim(100) << endl;
-     */
-
-    mainMenu(stops, graph, stopsIndex);
+    mainMenu(stops, directedGraph, stopsIndex);
     return 0;
 }

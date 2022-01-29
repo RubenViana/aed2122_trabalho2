@@ -19,14 +19,19 @@ void Graph::addEdge(int src, int dest, double weight, string line) {
     if (!hasDir) nodes[dest].adj.push_back({src, weight, line});
 }
 
-
+/**
+ * Returns the distance of the stop
+ */
 int Graph::dijkstra_distance(int a, int b) {
     dijkstra(a);
     if (nodes[b].dist == INF) return -1;
     return nodes[b].dist;
 }
 
-list<int> Graph::dijkstra_path(int a, int b) { // Caminho que percorre o caminho com menor distância
+/**
+ * Returns the path with the minimum distance between two locals.
+ */
+list<int> Graph::dijkstra_path(int a, int b) {
     list<int> path;
     dijkstra(a);
     if (nodes[b].dist == INF) return path;
@@ -38,6 +43,11 @@ list<int> Graph::dijkstra_path(int a, int b) { // Caminho que percorre o caminho
     return path;
 }
 
+/**
+ * @param a
+ * @param b
+ * @return Path with the minimum distance between two locals.
+ */
 list<string> Graph::dijkstra_pathLines(int a, int b) {
     list<string> path;
     dijkstra(a);
@@ -46,9 +56,15 @@ list<string> Graph::dijkstra_pathLines(int a, int b) {
         path.push_front(nodes[b].predLine);
         b = nodes[b].pred;
     }
+    path.push_back("---");
     return path;
 }
 
+/**
+ * Computes the shortest path starting in node "s" to all other nodes of the graph.
+ * Temporal Complexity: O(N * log N)
+ * @param s (starting stop)
+ */
 void Graph::dijkstra(int s) {
     MinHeap<int, int> q(n, -1);
     for (int v=1; v<=n; v++) {
@@ -75,6 +91,10 @@ void Graph::dijkstra(int s) {
     }
 }
 
+/**
+ * Computes the path that goes through less nodes.
+ * Temporal Complexity: O(n)
+ */
 void Graph::bfs(int v) {
     for (int v=1; v<=n; v++){
         nodes[v].visited = false;
@@ -94,11 +114,18 @@ void Graph::bfs(int v) {
                 nodes[w].visited = true;
                 nodes[w].dist = nodes[u].dist + 1;
                 nodes[w].pred = u;
+                nodes[w].predLine = e.line;
             }
         }
     }
 }
 
+/**
+ * Returns the path that goes through less nodes.
+ * @param a
+ * @param b
+ * @return
+ */
 list<int> Graph::bfs_path(int a, int b){ // Caminho que percorre o menor número de paragens
     list<int> path;
     bfs(a);
@@ -110,33 +137,75 @@ list<int> Graph::bfs_path(int a, int b){ // Caminho que percorre o menor número
     return path;
 }
 
+/**
+ * Computes the shortest path starting in node "s" to all other nodes of the graph.
+ * @param a
+ * @param b
+ * @return Path that goes trough less nodes
+ */
+list<string> Graph::bfs_pathLines(int a, int b) {
+    list<string> path;
+    bfs(a);
+    if (nodes[b].dist == INF) return path;
+    while(a != b) {
+        path.push_front(nodes[b].predLine);
+        b = nodes[b].pred;
+    }
+    path.push_back("---");
+    return path;
+}
+
+/**
+ * Calculates the MST (minimum spanning tree) of the graph.
+ * Temporal Complexity: O(N * log N)
+ * @param r
+ * @return Minimum distance in order to pass through all the nodes
+ */
 int Graph::prim(int r) {
 
     MinHeap<int,int> primHeap = MinHeap<int,int> (n,-1);
 
     for(int i = 1; i <= n; i++){
         nodes[i].dist = INF;
-        primHeap.insert(i, INF);
+        nodes[i].parent = -1;
+        nodes[i].visited = false;
+        primHeap.insert(i, nodes[i].dist);
     }
     nodes[r].dist = 0;
     primHeap.decreaseKey(r,0);
-    while(primHeap.getSize() != 0){
+    while(primHeap.getSize() > 0){
         int smallestDisKey = primHeap.removeMin();
-        for(auto it = nodes[smallestDisKey].adj.begin(); it != nodes[smallestDisKey].adj.end(); it++){
-            if(primHeap.hasKey(it->dest) && it->weight < nodes[it->dest].dist){
-                nodes[it->dest].parent = smallestDisKey;
-                nodes[it->dest].dist = it->weight;
-                primHeap.decreaseKey(it->dest,it->weight);
+        /*
+        for(auto it = nodes[smallestDisKey].adj.begin(); it != nodes[smallestDisKey].adj.end()++; it++){
+            if(primHeap.hasKey(it->dest) && it->weight < nodes[it->dest].dist && !nodes[it->dest].visited){
+                    nodes[it->dest].parent = smallestDisKey;
+                    nodes[it->dest].dist = it->weight;
+                    primHeap.decreaseKey(it->dest,it->weight);
+            }
+        }
+         */
+        for (auto i : nodes[smallestDisKey].adj) {
+            if (primHeap.hasKey(i.dest) && i.weight < nodes[i.dest].dist) {
+                nodes[i.dest].parent = smallestDisKey;
+                nodes[i.dest].dist = i.weight;
+                primHeap.decreaseKey(i.dest, i.weight);
             }
         }
     }
     int sum = 0;
     for(int j = 1; j <= n; j++){
-        sum += nodes[j].dist;
+        if(nodes[j].dist != INF) {
+            sum += nodes[j].dist;
+        }
     }
     return sum;
 }
 
+/**
+ * Calculates the MST (minimum spanning tree) of the graph.
+ * Temporal Complexity: O(N * log N)
+ * @return Minimum distance in order to pass through all the nodes
+ */
 int Graph::kruskal() {
     int var = 0;
     DisjointSets<int> newSect;
@@ -160,6 +229,9 @@ int Graph::kruskal() {
 }
 
 
+/**
+ * Shows the stop and the respective line.
+ */
 void Graph::print () {
     for (int i = 1; i <= n; i++){
         for (auto &d: nodes[i].adj)

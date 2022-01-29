@@ -57,6 +57,8 @@ public:
     list<int> dijkstra_path(int a, int b);
     list<string> dijkstra_pathLines(int a, int b);
     list<int> bfs_path(int a, int b);
+    list<string> bfs_pathLines(int a, int b);
+
 };
 
 #endif
