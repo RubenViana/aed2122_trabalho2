@@ -7,6 +7,12 @@
 #include <map>
 #include <cmath>
 
+#if defined(_WIN32)
+#define CLEAR_MACRO() system("cls")
+#elif defined(unix) || defined(__unix__) || defined(__unix)
+#define CLEAR_MACRO() system("clear")
+#endif
+
 using namespace std;
 
 /**
@@ -98,6 +104,13 @@ void readLineStops (vector<Line> &allLines) {
     }
 }
 
+void waitEnter(){
+    cin.clear();cin.ignore();
+    std::cout << std::endl << "Press enter to continue..." << std::endl;
+    std::string str;
+    std::getline(std::cin, str);
+}
+
 double haversine(double lat1, double lon1, double lat2, double lon2){
     // distance between latitudes and longitudes
     double dLat = (lat2 - lat1) * M_PI / 180.0;
@@ -128,31 +141,123 @@ string findClosestStop(double lat, double log, const vector<Stop>& stops){
 }
 
 
-void inputTest(const vector<Stop> &stops, string &start, string &end){
-    double lat1, log1, lat2, log2;
-    cout << "----START----" << endl;
-    cout << "latitude : "; cin >> lat1;
-    cout << "longitude : "; cin >> log1;
-    start = findClosestStop(lat1, log1, stops);
-    cout << "Starting Stop : " << start << endl;
+void getStartEndPoints(int type, const vector<Stop> &stops, string &start, string &end){
+    CLEAR_MACRO();
+    cout << "-----INPUT-----\n\n";
+    if (type == 1){
+        double startLat, startLong, endLat, endLong;
+        cout << "START POINT :" << endl;
+        cout << "  - Latitude -> "; cin >> startLat;
+        cout << endl;
+        cout << "  - Longitude -> "; cin >> startLong;
+        cout << endl;
+        start = findClosestStop(startLat, startLong, stops);
+        cout << "Starting Stop : " << start << endl;
+        cout << endl << endl;
 
-    cout << "----END----" << endl;
-    cout << "latitude : "; cin >> lat2;
-    cout << "longitude : "; cin >> log2;
-    end = findClosestStop(lat2, log2, stops);
-    cout << "Ending Stop : " << end << endl;
+        cout << "END POINT :" << endl;
+        cout << "  - Latitude -> "; cin >> endLat;
+        cout << endl;
+        cout << "  - Longitude -> "; cin >> endLong;
+        cout << endl;
+        end = findClosestStop(endLat, endLong, stops);
+        cout << "Ending Stop : " << end << endl;
+        cout << endl << endl;
+    }
+    else if (type == 2){
+        cout << "START POINT :" << endl;
+        cout << "  - Stop Code -> "; cin >> start;
+        cout << endl << endl;
+
+        cout << "END POINT :" << endl;
+        cout << "  - Stop Code -> "; cin >> end;
+        cout << endl << endl;
+    }
 }
 
-bool mainMenu(){
-    return 0;
+int getSearchMethod(){
+    int searchMethod;
+    while (true) {
+        cout << "SEARCH METHOD :\n\n";
+        cout << "1 - Less Distance\n";
+        cout << "2 - Less Stops\n";
+        cout << "0 - Return\n";
+        cout << endl << "Search Method : ";
+        cin >> searchMethod;
+        if (cin.fail()) {
+            cout << "Invalid Input !" << endl;
+            cin.clear();
+            cin.ignore(9999, '\n');
+            searchMethod = -1;
+        }
+        else{
+            switch (searchMethod) {
+                case 1 : return 1;
+                case 2 : return 2;
+                case 0 : return 0;
+                default : break;
+            }
+        }
+    }
+}
+
+void mainMenu(const vector<Stop> &stops, Graph &g, map<string,int> &stopsIndex){
     int opt;
     while (true){
+        CLEAR_MACRO();
         cout << "\tMAIN MENU\n\n";
         cout << "1 - INPUT : LATITUDE/LONGITUDE\n";
         cout << "2 - INPUT : STOP_CODE\n";
         cout << "0 - EXIT\n";
         cout << endl << "Option : ";
         cin >> opt;
+        if (cin.fail()) {
+            cout << "Invalid Input !" << endl;
+            cin.clear();
+            cin.ignore(9999, '\n');
+            opt = -1;
+        }
+        else {
+            string startStop, endStop;
+            list<int> path;
+            int searchMethod;
+            switch(opt) {
+                case 1 :
+                    getStartEndPoints(1, stops, startStop, endStop);
+                    break;
+                case 2 :
+                    getStartEndPoints(2, stops, startStop, endStop);
+                    break;
+                case 3:
+                    // dar print a todas as paragens !
+                    break;
+                case 0 :
+                    exit(0);
+                default :
+                    cout << "Invalid Input !" << endl;
+                    break;
+            }
+            do{
+                searchMethod = getSearchMethod();
+                if (searchMethod == 1){
+                    path = g.dijkstra_path(stopsIndex[startStop], stopsIndex[endStop]);
+                    cout << "Dijkstra Alg\n";
+                }
+                else if (searchMethod == 2){
+                    path = g.bfs_path(stopsIndex[startStop], stopsIndex[endStop]);
+                    cout << "BFS Alg\n";
+                }
+
+                //printing the path for the trip :  ... falta oraganizar a separaçao das colunas ...
+                int i = 1;
+                cout << "STEP NUMBER  ||  STOP CODE  ||  STOP NAME  ||  LATITUDE  ||  LONGITUDE" << endl;
+                for (auto &p : path) {
+                    cout << "----------------------------------------------------------------------" << endl;
+                    cout << "   "<< i << "   ||   " << stops[p - 1].code <<  "   ||   " << stops[p - 1].name << "   ||   " << stops[p - 1].latitude << "   ||   " << stops[p - 1].longitude << endl;
+                    i++;
+                }
+            }while (searchMethod != 0);
+        }
     }
 
 }
@@ -243,18 +348,12 @@ int main() {
   */
 
     /*
-
-    string start, end;
-    inputTest(stops, start, end);
-    list<int> pathDIJ = graph.dijkstra_path(stopsIndex[start], stopsIndex[end]);
-    for (auto p : pathDIJ) {
-        cout << stops[p - 1].code << " (" << p <<") / " << stops[p - 1].latitude << " " << stops[p - 1].longitude<< endl;
-    }
-     */
-
     cout << " -----------KRUSKAL--------------" << endl;
     cout << graph.kruskal() << endl;
     cout << " ------------PRIM--------------" << endl;
     cout << graph.prim(100) << endl;
+     */
+
+    mainMenu(stops, graph, stopsIndex);
     return 0;
 }
